@@ -8,3 +8,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8080:8080
+
+  microservice1:
+    image: kennethreitz/httpbin
+    ports:
+      - 9080:80
