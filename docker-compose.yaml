@@ -1,0 +1,10 @@
+version: '3'
+services:
+
+  gateway:
+    image: gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
