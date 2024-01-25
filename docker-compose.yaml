@@ -1,6 +1,5 @@
 version: '3'
 services:
-
   gateway:
     image: gateway
     build:
@@ -8,8 +7,15 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8080:8080
+    networks:
+      - api-network
 
-  microservice1:
+  microservice:
     image: kennethreitz/httpbin
     ports:
       - 9080:80
+    networks:
+      - api-network
+
+networks:
+  api-network:

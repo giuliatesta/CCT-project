@@ -17,15 +17,13 @@ public class CctServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        PrintWriter out = resp.getWriter();
         System.out.println("doGet: " + req);
         try {
-            String url = "https://microservice1/robots.txt";
+            String url = "https://microservice:9080/json";
+            PrintWriter out = resp.getWriter();
             RestTemplate restTemplate = new RestTemplate();
-            var result = restTemplate.getForObject(url, String.class);
-            out.write(result);
-            System.out.println(result);
-            out.println(result);
+            var result = restTemplate.getForEntity(url, String.class);
+            out.println(result.toString());
         } catch (Exception e) {
             e.toString();
         }
