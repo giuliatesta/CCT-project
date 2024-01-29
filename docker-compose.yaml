@@ -8,14 +8,14 @@ services:
     ports:
       - 8080:8080
     networks:
-      - api-network
+      - cct-procject_default
 
-  microservice:
+  httpbin:
     image: kennethreitz/httpbin
     ports:
       - 9080:80
     networks:
-      - api-network
+      - cct-procject_default
 
 networks:
-  api-network:
+  cct-procject_default:
