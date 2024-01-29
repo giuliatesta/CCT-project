@@ -10,10 +10,17 @@ services:
     networks:
       - cct-procject_default
 
-  httpbin:
+  httpbin1:
     image: kennethreitz/httpbin
     ports:
       - 9080:80
+    networks:
+      - cct-procject_default
+
+  httpbin2:
+    image: kennethreitz/httpbin
+    ports:
+      - 7080:80
     networks:
       - cct-procject_default
 
