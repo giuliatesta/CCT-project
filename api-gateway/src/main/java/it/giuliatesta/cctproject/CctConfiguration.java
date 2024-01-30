@@ -18,11 +18,12 @@ public class CctConfiguration {
 
     private void load() {
         try {
-            InputStream input = CctConfiguration.class.getClassLoader().getResourceAsStream("/cct-config.properties");
+            InputStream input = CctConfiguration.class.getClassLoader().getResourceAsStream("cct-config.properties");
             configs.load(input);
         } catch (Exception e) {
             System.out.println("Error while loading microservices properties");
             e.printStackTrace();
+
         }
     }
 

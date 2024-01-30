@@ -24,5 +24,19 @@ services:
     networks:
       - cct-procject_default
 
+  httpbin3:
+    image: kennethreitz/httpbin
+    ports:
+      - 9180:80
+    networks:
+      - cct-procject_default
+
+  httpbin4:
+    image: kennethreitz/httpbin
+    ports:
+      - 7180:80
+    networks:
+      - cct-procject_default
+
 networks:
   cct-procject_default:

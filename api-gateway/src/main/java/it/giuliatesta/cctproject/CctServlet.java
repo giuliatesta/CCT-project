@@ -55,11 +55,10 @@ public class CctServlet extends HttpServlet {
                 String responseBody = response.getBody();
                 out.println("Response from microservice" + microservice + ": " + responseBody);
             } else {
-                throw new Exception("error calling microservice: " + response.getStatusCode());
+                throw new Exception("Error calling microservice: " + response.getStatusCode());
             }
         } catch (Exception e) {
-            resp.setStatus(400);
-            out.println("Error: " + e.getMessage());
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -73,6 +72,13 @@ public class CctServlet extends HttpServlet {
     private String composeUrl(String endpoint, String microservice) {
         CctConfiguration config = CctConfiguration.getInstance();
         String microserviceUrl = config.get(microservice);
+        // there are multiple urls available. Randomly choosing one
+        // TODO round robin to choose which one to use
+        if (microserviceUrl.contains(",")) {
+            var splits = microserviceUrl.split(",");
+            var random = new Random();
+            microserviceUrl = splits[random.nextInt(splits.length - 1)];
+        }
         // if the microservice requested is not supported
         if (microserviceUrl == null || microserviceUrl.isEmpty()) {
             throw new PropertyNotFoundException();
