@@ -4,13 +4,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.el.PropertyNotFoundException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,6 +20,8 @@ public class CctServlet extends HttpServlet {
     static final int NUMBER_OF_SERVICES = 2;
 
     private final RestTemplate restTemplate;
+    private final CctAuth authService = new CctAuth();
+    private final CctLoadBalancer balancer = new CctLoadBalancer();
 
     public CctServlet(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -30,26 +29,21 @@ public class CctServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String endpoint = getEndPointFromRequest(req);
-        if ("".equals(endpoint) || "/".equals(endpoint)) {
-            resp.getWriter().println("Invalid request");
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
+        if (authService.validate(req)) {
+            String endpoint = getEndPointFromRequest(req);
+            call(endpoint, randomlyChooseMicroservice(), resp);
         }
-        call(endpoint, randomlyChooseMicroservice(), resp);
     }
 
     private void call(String endpoint, String microservice, HttpServletResponse resp)
             throws ServletException, IOException {
         PrintWriter out = resp.getWriter();
         // TODO headers
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer your_token");
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+
         try {
             String url = composeUrl(endpoint, microservice);
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET,
-                    entity, String.class);
+                    authService.prepare(String.class), String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 String responseBody = response.getBody();
@@ -70,24 +64,7 @@ public class CctServlet extends HttpServlet {
     }
 
     private String composeUrl(String endpoint, String microservice) {
-        CctConfiguration config = CctConfiguration.getInstance();
-        String microserviceUrl = config.get(microservice);
-        // there are multiple urls available. Randomly choosing one
-        // TODO round robin to choose which one to use
-        if (microserviceUrl.contains(",")) {
-            var splits = microserviceUrl.split(",");
-            var random = new Random();
-            microserviceUrl = splits[random.nextInt(splits.length - 1)];
-        }
-        // if the microservice requested is not supported
-        if (microserviceUrl == null || microserviceUrl.isEmpty()) {
-            throw new PropertyNotFoundException();
-        }
-
-        if (!microserviceUrl.endsWith("/")) {
-            microserviceUrl += "/";
-        }
-
+        var microserviceUrl = balancer.getMicroserviceUrl(microservice);
         return microserviceUrl + endpoint;
     }
 
