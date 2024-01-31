@@ -9,15 +9,15 @@ import org.springframework.web.client.RestTemplate;
 import jakarta.servlet.http.HttpServlet;
 
 @SpringBootApplication
-public class CctProjectApplication {
+public class Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CctProjectApplication.class, args);
+		SpringApplication.run(Application.class, args);
 	}
 
 	@Bean
 	public ServletRegistrationBean<HttpServlet> servletRegistrationBean() {
-		return new ServletRegistrationBean<HttpServlet>(new CctServlet(new RestTemplate()), "/");
+		return new ServletRegistrationBean<HttpServlet>(new Servlet(new RestTemplate()), "/");
 	}
 
 }

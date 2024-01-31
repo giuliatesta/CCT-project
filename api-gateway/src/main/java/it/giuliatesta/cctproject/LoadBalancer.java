@@ -4,12 +4,12 @@ import java.util.ArrayDeque;
 
 import jakarta.el.PropertyNotFoundException;
 
-public class CctLoadBalancer {
+public class LoadBalancer {
 
     private ArrayDeque<String> queue = new ArrayDeque<>();
 
     public String getMicroserviceUrl(String name) {
-        CctConfiguration config = CctConfiguration.getInstance();
+        PropertyLoader config = PropertyLoader.getInstance();
         String microserviceUrl = config.get(name);
 
         if (microserviceUrl.contains(",")) {

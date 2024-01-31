@@ -3,22 +3,22 @@ package it.giuliatesta.cctproject;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class CctConfiguration {
+public class PropertyLoader {
     private static final Properties configs = new Properties();
 
-    private static final CctConfiguration instance = new CctConfiguration();
+    private static final PropertyLoader instance = new PropertyLoader();
 
     static {
         instance.load();
     }
 
-    static CctConfiguration getInstance() {
+    static PropertyLoader getInstance() {
         return instance;
     }
 
     private void load() {
         try {
-            InputStream input = CctConfiguration.class.getClassLoader().getResourceAsStream("cct-config.properties");
+            InputStream input = PropertyLoader.class.getClassLoader().getResourceAsStream("cct-config.properties");
             configs.load(input);
         } catch (Exception e) {
             System.out.println("Error while loading microservices properties");
