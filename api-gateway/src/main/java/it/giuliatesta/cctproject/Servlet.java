@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "gateway", description = "Custom API gateway")
 public class Servlet extends HttpServlet {
 
-    static final int NUMBER_OF_SERVICES = 2;
+    static final int NUMBER_OF_SERVICES = 6;
 
     private final ServiceClient client;
 
@@ -35,10 +35,6 @@ public class Servlet extends HttpServlet {
 
     private String randomlyChooseMicroservice() {
         var random = new Random();
-        if (random.nextInt(NUMBER_OF_SERVICES - 1) == 1) {
-            return "httpbin1";
-        } else {
-            return "httpbin2";
-        }
+        return "httpbin" + random.nextInt(NUMBER_OF_SERVICES);
     }
 }

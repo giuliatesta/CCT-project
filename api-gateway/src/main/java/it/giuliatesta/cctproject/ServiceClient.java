@@ -16,19 +16,16 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class ServiceClient extends RetryPolicy {
 
-    private final LoadBalancer balancer = new LoadBalancer();
     private final RestTemplate restTemplate;
 
     public ServiceClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    protected void call(HttpServletRequest req, HttpServletResponse resp, HttpMethod method, String microservice)
+    protected void call(HttpServletResponse resp, String url, HttpMethod method, String microservice)
             throws ServletException, IOException {
         PrintWriter out = resp.getWriter();
         try {
-            String endpoint = getEndPointFromRequest(req);
-            String url = composeUrl(endpoint, microservice);
             System.out.println("[ServiceClient] Calling " + url);
             ResponseEntity<String> response = restTemplate.exchange(url, method,
                     prepare(String.class, microservice),
@@ -55,17 +52,4 @@ public class ServiceClient extends RetryPolicy {
         return entity;
     }
 
-    // TODO check @NonNull decorator
-    @NonNull
-    private String composeUrl(String endpoint, String microservice) {
-        var microserviceUrl = balancer.getMicroserviceUrl(microservice);
-        return microserviceUrl + endpoint;
-    }
-
-    // TODO validate correct routing httpbin/json/ vs json/
-    private String getEndPointFromRequest(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        var splits = requestURI.split("/");
-        return splits[splits.length - 1];
-    }
 }
