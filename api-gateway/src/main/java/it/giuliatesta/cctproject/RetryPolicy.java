@@ -22,8 +22,11 @@ public abstract class RetryPolicy {
     // It will fail after MAX_FAILURES tries with 503 status code
     public void send(HttpServletRequest request, HttpServletResponse response, HttpMethod method, String microservice)
             throws IOException {
-        if (!canRetry()) {
-            response.getWriter().println("RetryPolicy: reached maximum number of attempts");
+
+        if (canRetry()) {
+            System.out.println(
+                    "[RetryPolicy] Reached maximum number of attempts (" + MAX_FAILURES + "). Cannot retry again.");
+            response.getWriter().println("Reached maximum number of attempts");
             response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             consecutiveFailures = 0;
         } else {
@@ -32,7 +35,6 @@ public abstract class RetryPolicy {
                 // if the call was successful, the counter needs to be resetted
                 consecutiveFailures = 0;
             } catch (Exception e) {
-                System.out.println("RetryPolicy: attempt number " + consecutiveFailures);
                 consecutiveFailures++;
                 // retry
                 send(request, response, method, microservice);
