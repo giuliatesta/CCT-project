@@ -12,23 +12,21 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 // TODO make a static generic getInstance to make a singleton
-@WebFilter("/*")
+@WebFilter(filterName = "Custom web filter to menage authorization")
 public class AuthFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        String token = request.getAttribute("Authorization").toString();
-        System.out.println("DO FILTER");
+        var token = ((HttpServletRequest) request).getHeader("Authorization");
         if (Auth.validate(token)) {
-            System.out.println("VALIDATED");
             // Token is valid, proceed with the chain
             chain.doFilter(request, response);
         } else {
-            System.out.println("NOT VALIDATED");
             // Token is invalid, return unauthorized response
             response.getWriter().write("Invalid token");
             // TODO casting works?
@@ -41,38 +39,61 @@ class Auth {
 
     private static String getSecret() {
         try {
-            return PropertyLoader.getInstance().get("secrey-key");
+            var secret = PropertyLoader.getInstance().get("secret-key");
+            if (secret == null) {
+                throw new Exception("'secret-key' property not found or ill written.");
+            }
+            return secret;
         } catch (Exception e) {
-            System.out.println("Error while loading secret key: " + e);
-            throw e;
+            System.out.println("[Auth] Error while loading secret key: " + e);
+            return null;
         }
     }
 
-    public static boolean validate(String authorizationToken) {
+    public static boolean validate(Object authorizationToken) {
         try {
-            // HS256 (HMAC with SHA-256) : same key for generating and validating.
+            if (authorizationToken == null) {
+                System.out.println("[Auth] Authorization header not found. Request rejected");
+                return false;
+            }
+
+            String strToken = authorizationToken.toString();
+            if (!strToken.startsWith("bearer ")) {
+                System.out.println("[Auth] Invalid authorization header format. Request rejected");
+                return false;
+            }
+            // remove the "bearer " prefix
+            strToken = strToken.substring(7);
+
+            // HS256 (HMAC with SHA-256): same key for generating and validating.
             // TODO think about using asymmetric algorithms (like RS256)
             Algorithm algorithm = Algorithm.HMAC256(getSecret());
-            JWT.require(algorithm).build().verify(authorizationToken);
+            JWT.require(algorithm).build().verify(strToken);
             return true;
         } catch (Exception e) {
-            System.out.println("Error while validating jwt: " + e);
+            System.out.println("[Auth] Error while validating jwt: " + e);
             return false;
         }
     }
 
+    // usually gateways don't send request to microservices with authorization
+    // headers
+    // once the request is valided by the gateway there is no need to check it
+    // again.
     public static String generateToken(String microservice) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(getSecret());
-            return JWT.create()
+            var token = JWT.create()
                     .withAudience(microservice)
                     .withIssuedAt(Instant.now())
                     .withExpiresAt(getExpirationDate())
                     .withClaim("role", "admin")
                     .withArrayClaim("permissions", new String[] { "read", "write" })
                     .sign(algorithm);
+            System.out.println("[Auth]: Authorization header successfully created");
+            return token;
         } catch (Exception e) {
-            System.out.println("Error while generating token: " + e);
+            System.out.println("[Auth] Error while generating token: " + e);
             return null;
         }
     }
@@ -83,8 +104,8 @@ class Auth {
         try {
             secondsToAdd *= (Integer.parseInt(PropertyLoader.getInstance().get("expiration_time_in_days")));
         } catch (Exception e) {
-            System.out.println("Error while loading expiration time key: " + e);
-            System.out.println("Using default expiration date");
+            System.out.println("[Auth] Error while loading expiration time key: " + e);
+            System.out.println("[Auth] Using default expiration date");
         }
         return Date.from(Instant.now().plusSeconds(secondsToAdd));
     }

@@ -1,12 +1,9 @@
 package it.giuliatesta.cctproject;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Random;
 
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.servlet.ServletException;

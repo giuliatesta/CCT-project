@@ -29,15 +29,14 @@ public class ServiceClient extends RetryPolicy {
         try {
             String endpoint = getEndPointFromRequest(req);
             String url = composeUrl(endpoint, microservice);
-            System.out.println("CALL.... " + url);
+            System.out.println("[ServiceClient] Calling " + url);
             ResponseEntity<String> response = restTemplate.exchange(url, method,
                     prepare(String.class, microservice),
                     String.class);
 
-            System.out.println("RESPONSE: " + response);
             if (response.getStatusCode().is2xxSuccessful()) {
                 String responseBody = response.getBody();
-                out.println("Response from microservice" + microservice + ": " + responseBody);
+                out.println("Response from microservice" + microservice + ":\n" + responseBody);
             } else {
                 throw new Exception("Error calling microservice: " + response.getStatusCode());
             }

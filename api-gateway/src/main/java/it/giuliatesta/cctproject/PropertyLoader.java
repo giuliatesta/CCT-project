@@ -21,7 +21,7 @@ public class PropertyLoader {
             InputStream input = PropertyLoader.class.getClassLoader().getResourceAsStream("cct-config.properties");
             configs.load(input);
         } catch (Exception e) {
-            System.out.println("Error while loading microservices properties");
+            System.out.println("[Property Loader] Error while loading microservices properties");
             e.printStackTrace();
 
         }
