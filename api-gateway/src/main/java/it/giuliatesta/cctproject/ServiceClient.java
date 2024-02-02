@@ -1,20 +1,16 @@
 package it.giuliatesta.cctproject;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class ServiceClient extends RetryPolicy {
+public class ServiceClient extends RetryingLoadBalancer {
 
     private final RestTemplate restTemplate;
 
@@ -23,23 +19,20 @@ public class ServiceClient extends RetryPolicy {
     }
 
     protected void call(HttpServletResponse resp, String url, HttpMethod method, String microservice)
-            throws ServletException, IOException {
+            throws Exception {
         PrintWriter out = resp.getWriter();
-        try {
-            System.out.println("[ServiceClient] Calling " + url);
-            ResponseEntity<String> response = restTemplate.exchange(url, method,
-                    prepare(String.class, microservice),
-                    String.class);
+        System.out.println("[ServiceClient] Calling " + url);
+        // makes the call to the microservice
+        ResponseEntity<String> response = restTemplate.exchange(url, method,
+                prepare(String.class, microservice),
+                String.class);
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                String responseBody = response.getBody();
-                out.println("Response from microservice" + microservice + ":\n" + responseBody);
-            } else {
-                throw new Exception("Error calling microservice: " + response.getStatusCode());
-            }
-
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            String responseBody = response.getBody();
+            System.out.println("Success!");
+            out.println("Response from microservice " + microservice + ":\n" + responseBody);
+        } else {
+            throw new Exception("Error calling microservice: " + response.getStatusCode());
         }
     }
 
