@@ -24,9 +24,11 @@ public class AuthFilter implements Filter {
             throws IOException, ServletException {
         var token = ((HttpServletRequest) request).getHeader("Authorization");
         if (Auth.validate(token)) {
+            System.out.println("[Auth Filter] Request validated");
             // Token is valid, proceed with the chain
             chain.doFilter(request, response);
         } else {
+            System.out.println("[Auth Filter] Request rejected");
             // Token is invalid, return unauthorized response
             response.getWriter().write("Invalid token");
             // TODO casting works?
@@ -36,7 +38,6 @@ public class AuthFilter implements Filter {
 }
 
 class Auth {
-
     private static String getSecret() {
         try {
             var secret = PropertyLoader.getInstance().get("secret-key");
@@ -80,11 +81,12 @@ class Auth {
     // headers
     // once the request is valided by the gateway there is no need to check it
     // again.
-    public static String generateToken(String microservice) {
+
+    // TODO add AUDIENCE
+    public static String generateToken() {
         try {
             Algorithm algorithm = Algorithm.HMAC256(getSecret());
             var token = JWT.create()
-                    .withAudience(microservice)
                     .withIssuedAt(Instant.now())
                     .withExpiresAt(getExpirationDate())
                     .withClaim("role", "admin")
