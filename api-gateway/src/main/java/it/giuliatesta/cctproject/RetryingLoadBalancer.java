@@ -21,60 +21,66 @@ public abstract class RetryingLoadBalancer {
     public void send(HttpServletRequest request, HttpServletResponse response, HttpMethod method)
             throws IOException {
         MicroserviceRequestInfo microserviceRequestInfo = getMicroServiceInfo(request);
-        var host = microserviceRequestInfo.usedHost;
-        var url = microserviceRequestInfo.url();
-        try {
-            if (host.isInTimeOut()) {
-                System.out.println("[Retrying Load Balancer] Host " + host.host + "not in timeout: can be called.");
-                // if can retry
-                if (canRetry()) {
-                    System.out.println("[Retrying Load Balancer] Attempt: " + consecutiveFailures);
-                    // I forward the request and if doesn't fail (throws exception) I reset the
-                    // failure's count.
-                    call(response, url, method);
-                    consecutiveFailures = 0;
+        if (microserviceRequestInfo == null) {
+            System.out.println("[Retrying Load Balancer] Request not found.");
+            response.getWriter().println("Request not found.");
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        } else {
+            var host = microserviceRequestInfo.usedHost;
+            var url = microserviceRequestInfo.url();
+            try {
+                if (host.isInTimeOut()) {
+                    System.out.println("[Retrying Load Balancer] Host " + host.host + "not in timeout: can be called.");
+                    // if can retry
+                    if (canRetry()) {
+                        System.out.println("[Retrying Load Balancer] Attempt: " + consecutiveFailures);
+                        // I forward the request and if doesn't fail (throws exception) I reset the
+                        // failure's count.
+                        call(response, url, method);
+                        consecutiveFailures = 0;
+                    } else {
+                        // If the hosts has run out all the available attempts,
+                        // I return 503 and put the host in timeout
+                        stop(response, host, "Reached maximum number of attempts");
+                    }
                 } else {
-                    // If the hosts has run out all the available attempts,
-                    // I return 503 and put the host in timeout
-                    stop(response, host);
+                    System.out.println("[Retrying Load Balancer] Host " + host.host + " in time out. Should retry? ");
+                    // If the host is in timeout
+                    // and I can retry (meaning 10 requests have gone by)
+                    if (host.shouldRetry()) {
+                        System.out.println("[Retrying Load Balancer] retrying...");
+                        // I forward the call and if doesn't fail I reset the failure's count and take
+                        // it out of time out.
+                        call(response, url, method);
+                        consecutiveFailures = 0;
+                        host.setTimeOut(false);
+                        System.out
+                                .println("[Host] Microservice host " + host
+                                        + " is now functioning again. Out from time out.");
+                    } else {
+                        System.out.println(
+                                "[Retrying Load Balancer] skipping the timed out host since it's too soon to retry.");
+                        // If it's too soon to retry, I skip it and choose another host
+                        microserviceRequestInfo.changeHost();
+                        System.out
+                                .println("[Retrying Load Balancer] New host: " + microserviceRequestInfo.usedHost.host);
+                        call(response, microserviceRequestInfo.url(), method);
+                        consecutiveFailures = 0;
+                    }
                 }
-            } else {
-                System.out.println("[Retrying Load Balancer] Host " + host.host + " in time. Should retry? ");
-                // If the host is in timeout
-                // and I can retry (meaning 10 requests have gone by)
-                if (host.shouldRetry()) {
-                    System.out.println("[Retrying Load Balancer] retrying...");
-                    // I forward the call and if doesn't fail I reset the failure's count and take
-                    // it out of time out.
-                    call(response, url, method);
-                    consecutiveFailures = 0;
-                    host.setTimeOut(false);
-                    System.out
-                            .println("[Host] Microservice host " + host
-                                    + " is now functioning again. Out from time out.");
+            } catch (Exception e) {
+                consecutiveFailures++;
+                // stops if it definitely fails
+                System.out.println("[Retrying Load Balancer] Request to " + microserviceRequestInfo.route.sourcePath
+                        + " has failed: " + e);
+                if (!canRetry()) {
+                    System.out.println("[Retrying Load Balancer] circuit break opening.");
+                    stop(response, host, e.getMessage());
                 } else {
-                    System.out.println(
-                            "[Retrying Load Balancer] skipping the timed out host since it's too soon to retry.");
-                    // If it's too soon to retry, I skip it and choose another host
-                    microserviceRequestInfo.changeHost();
-                    System.out
-                            .println("[Retrying Load Balancer] New host: " + microserviceRequestInfo.usedHost.host);
-                    call(response, microserviceRequestInfo.url(), method);
-                    consecutiveFailures = 0;
+                    System.out.println("[Retrying Load Balancer] retrying with new host...");
+                    // retry
+                    send(request, response, method);
                 }
-            }
-        } catch (Exception e) {
-            consecutiveFailures++;
-            // stops if it definitely fails
-            System.out.println("[Retrying Load Balancer] Request to " + microserviceRequestInfo.route.sourcePath
-                    + " has failed: " + e);
-            if (!canRetry()) {
-                System.out.println("[Retrying Load Balancer] circuit break opening.");
-                stop(response, host);
-            } else {
-                System.out.println("[Retrying Load Balancer] retrying with new host...");
-                // retry
-                send(request, response, method);
             }
         }
     }
@@ -87,10 +93,10 @@ public abstract class RetryingLoadBalancer {
         return consecutiveFailures < MAX_FAILURES;
     }
 
-    private void stop(HttpServletResponse response, Host host) throws IOException {
+    private void stop(HttpServletResponse response, Host host, String message) throws IOException {
         System.out.println("[Retying Load Balancer] Reached maximum number of attempts (" + MAX_FAILURES
                 + "). Cannot retry again.");
-        response.getWriter().println("Reached maximum number of attempts");
+        response.getWriter().println(message);
         response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         consecutiveFailures = 0;
         host.setTimeOut(true);
@@ -102,7 +108,8 @@ public abstract class RetryingLoadBalancer {
         var sourcePath = request.getRequestURI();
         Route route = config.getRoute(sourcePath);
         if (route == null) {
-            throw new PropertyNotFoundException("[RetryingLoadBalancer] Requested route " + sourcePath + " not found");
+            System.out.println("[RetryingLoadBalancer] Requested route " + sourcePath + " not found");
+            return null;
         }
         return new MicroserviceRequestInfo(route);
     }
