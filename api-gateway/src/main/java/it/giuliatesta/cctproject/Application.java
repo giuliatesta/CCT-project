@@ -23,10 +23,18 @@ public class Application {
 	}
 
 	@Bean
-	public FilterRegistrationBean<AuthFilter> filter() {
+	public FilterRegistrationBean<AuthFilter> authorizationFilter() {
 		FilterRegistrationBean<AuthFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setFilter(new AuthFilter());
-		System.out.println("[Application] FilterRegistrationBean");
+		System.out.println("[Application] Registration of AuthFilter");
+		return registrationBean;
+	}
+
+	@Bean
+	public FilterRegistrationBean<RateLimitingFilter> rateLimitingFilter() {
+		FilterRegistrationBean<RateLimitingFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new RateLimitingFilter());
+		System.out.println("[Application] Registration of RateLimitingFilter");
 		return registrationBean;
 	}
 }
