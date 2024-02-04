@@ -19,7 +19,16 @@ public class Application {
 	@Bean
 	public ServletRegistrationBean<HttpServlet> servlet() {
 		System.out.println("[Application] ServletRegistrationBean");
-		return new ServletRegistrationBean<HttpServlet>(new Servlet(new RestTemplate()), "/");
+		return new ServletRegistrationBean<HttpServlet>(new Servlet(), "/");
+	}
+
+	@Bean
+	public FilterRegistrationBean<RateLimitingFilter> rateLimitingFilter() {
+		FilterRegistrationBean<RateLimitingFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new RateLimitingFilter());
+		registrationBean.setOrder(0);
+		System.out.println("[Application] Registration of RateLimitingFilter");
+		return registrationBean;
 	}
 
 	@Bean
@@ -27,14 +36,6 @@ public class Application {
 		FilterRegistrationBean<AuthFilter> registrationBean = new FilterRegistrationBean<>();
 		registrationBean.setFilter(new AuthFilter());
 		System.out.println("[Application] Registration of AuthFilter");
-		return registrationBean;
-	}
-
-	@Bean
-	public FilterRegistrationBean<RateLimitingFilter> rateLimitingFilter() {
-		FilterRegistrationBean<RateLimitingFilter> registrationBean = new FilterRegistrationBean<>();
-		registrationBean.setFilter(new RateLimitingFilter());
-		System.out.println("[Application] Registration of RateLimitingFilter");
 		return registrationBean;
 	}
 }
