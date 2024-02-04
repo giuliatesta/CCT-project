@@ -23,7 +23,7 @@ public class PropertyLoader {
             InputStream input = PropertyLoader.class.getClassLoader().getResourceAsStream("cct-config.properties");
             configs.load(input);
             castIntoRoutes();
-            System.out.println("[PropertyLoader] loaded properties in 'cct-config.properties");
+            System.out.println("[PropertyLoader] loaded properties in 'cct-config.properties'");
         } catch (Exception e) {
             System.out.println("[Property Loader] Error while loading microservices properties");
             e.printStackTrace();

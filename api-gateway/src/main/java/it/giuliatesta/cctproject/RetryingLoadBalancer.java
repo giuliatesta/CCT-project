@@ -29,7 +29,8 @@ public abstract class RetryingLoadBalancer {
             var url = microserviceRequestInfo.url();
             try {
                 if (!host.isInTimeOut()) {
-                    System.out.println("[Retrying Load Balancer] Host " + host.host + "not in timeout: can be called.");
+                    System.out
+                            .println("[Retrying Load Balancer] Host " + host.host + " not in timeout: can be called.");
                     // if can retry
                     if (canRetry()) {
                         // I forward the request and if doesn't fail (throws exception) I reset the
