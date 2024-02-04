@@ -88,4 +88,10 @@ class Route {
         this.destinationPath = destinationPath;
         this.destinationHost = destinationHost;
     }
+
+    @Override
+    public String toString() {
+        return "Route{sourcePath:" + sourcePath + ", destinationPath:" + destinationPath + ", destinationHost:"
+                + destinationHost + "}";
+    }
 }

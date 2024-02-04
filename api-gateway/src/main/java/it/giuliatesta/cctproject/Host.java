@@ -11,6 +11,7 @@ class Host implements Comparable<Host> {
 
     Host(String host) {
         this.host = host;
+        timestamp = System.currentTimeMillis();
     }
 
     public boolean shouldRetry() {
@@ -27,31 +28,38 @@ class Host implements Comparable<Host> {
             System.out.println(
                     "[Load Balancer] WORNING Microservice host " + host
                             + " already in timeout. Still not working.");
+        } else {
+            System.out
+                    .println("[Host] Microservice host " + host
+                            + " seems to be failing. Time out.");
+            timeout = true;
+            timestamp = System.currentTimeMillis();
         }
-        System.out
-                .println("[Host] Microservice host " + host
-                        + " seems to be failing. Time out.");
-        timeout = true;
-        timestamp = System.currentTimeMillis();
 
     }
 
     public void putOutTimeOut() {
         if (!timeout) {
             System.out.println(
-                    "[Load Balancer] WORNING Microservice host " + host
+                    "[Host] WORNING Microservice host " + host
                             + " currently not in time out.");
+        } else {
+            System.out
+                    .println("[Host] Microservice host " + host
+                            + " is now functioning again. Out from time out.");
+            timeout = false;
+            timestamp = System.currentTimeMillis();
         }
-        System.out
-                .println("[Host] Microservice host " + host
-                        + " is now functioning again. Out from time out.");
-        timeout = false;
-        timestamp = 0;
     }
 
     @Override
     public int compareTo(Host other) {
         return host.compareTo(other.host);
+    }
+
+    @Override
+    public String toString() {
+        return "Host{host:" + host + ", timeout:" + timeout + ", timestamp:" + timestamp + "}";
     }
 
 }
