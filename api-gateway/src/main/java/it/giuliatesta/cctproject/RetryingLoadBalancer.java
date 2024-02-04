@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.springframework.http.HttpMethod;
 
-import jakarta.el.PropertyNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -20,7 +19,7 @@ public abstract class RetryingLoadBalancer {
 
     public void send(HttpServletRequest request, HttpServletResponse response, HttpMethod method)
             throws IOException {
-        MicroserviceRequestInfo microserviceRequestInfo = getMicroServiceInfo(request);
+        MicroserviceRequestInfo microserviceRequestInfo = getMicroserviceInfo(request);
         if (microserviceRequestInfo == null) {
             System.out.println("[Retrying Load Balancer] Request not found.");
             response.getWriter().println("Request not found.");
@@ -53,15 +52,15 @@ public abstract class RetryingLoadBalancer {
                         // it out of time out.
                         call(response, url, method);
                         consecutiveFailures = 0;
-                        host.setTimeOut(false);
-                        System.out
-                                .println("[Host] Microservice host " + host
-                                        + " is now functioning again. Out from time out.");
+                        host.putOutTimeOut();
                     } else {
                         System.out.println(
                                 "[Retrying Load Balancer] skipping the timed out host since it's too soon to retry.");
                         // If it's too soon to retry, I skip it and choose another host
                         microserviceRequestInfo.changeHost();
+                        if (microserviceRequestInfo.usedHost == null) {
+                            throw new Exception("[Retrying Load Balancer] no other host available.");
+                        }
                         System.out
                                 .println("[Retrying Load Balancer] New host: " + microserviceRequestInfo.usedHost.host);
                         call(response, microserviceRequestInfo.url(), method);
@@ -85,7 +84,6 @@ public abstract class RetryingLoadBalancer {
         }
     }
 
-    // the actual method that calls
     protected abstract void call(HttpServletResponse resp, String url, HttpMethod method)
             throws Exception;
 
@@ -94,16 +92,14 @@ public abstract class RetryingLoadBalancer {
     }
 
     private void stop(HttpServletResponse response, Host host, String message) throws IOException {
-        System.out.println("[Retying Load Balancer] Reached maximum number of attempts (" + MAX_FAILURES
-                + "). Cannot retry again.");
+        System.out.println("[Retying Load Balancer] " + message);
         response.getWriter().println(message);
         response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         consecutiveFailures = 0;
-        host.setTimeOut(true);
-        System.out.println("[Host] Microservice host " + host + " is failing. Time out.");
+        host.putInTimeOut();
     }
 
-    private MicroserviceRequestInfo getMicroServiceInfo(HttpServletRequest request) {
+    private MicroserviceRequestInfo getMicroserviceInfo(HttpServletRequest request) {
         PropertyLoader config = PropertyLoader.getInstance();
         var sourcePath = request.getRequestURI();
         Route route = config.getRoute(sourcePath);

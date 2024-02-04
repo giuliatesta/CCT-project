@@ -31,6 +31,9 @@ public class MicroserviceRequestInfo {
 
     public void changeHost() {
         ArrayDeque<Host> availableHosts = getAvailableHosts(route.destinationHost);
+        if (availableHosts.size() == 1) {
+            usedHost = null;
+        }
         var newHost = next(availableHosts);
         while (newHost != usedHost) {
             newHost = next(availableHosts);
