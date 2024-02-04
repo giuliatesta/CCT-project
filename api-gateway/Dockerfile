@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Run the Maven Wrapper to build the project
-RUN mvn clean install
+RUN mvn clean verify
 
 # Expose the port on which the Spring Boot application will run
 EXPOSE 8080
