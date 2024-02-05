@@ -31,7 +31,7 @@ public class Router extends RetryingLoadBalancer {
         if (response.getStatusCode().is2xxSuccessful()) {
             String responseBody = response.getBody();
             System.out.println("[Service Client] Success!");
-            out.println("Response from microservice:\n" + responseBody);
+            out.println("Called url:" + url + "\nResponse:\n" + responseBody);
         } else {
             throw new Exception("Error calling microservice: " + response.getStatusCode());
         }

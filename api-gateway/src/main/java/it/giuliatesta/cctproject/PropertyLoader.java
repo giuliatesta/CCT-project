@@ -22,7 +22,6 @@ public class PropertyLoader {
         try {
             InputStream input = PropertyLoader.class.getClassLoader().getResourceAsStream("cct-config.properties");
             configs.load(input);
-            System.out.println("CONFIGS\n:" + configs);
             castIntoRoutes();
             System.out.println("[PropertyLoader] loaded properties in 'cct-config.properties'");
         } catch (Exception e) {

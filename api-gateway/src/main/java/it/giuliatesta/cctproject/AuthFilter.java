@@ -27,18 +27,20 @@ public class AuthFilter implements Filter {
             case INVALID_TOKEN:
                 // Token is invalid, return unauthorized response
                 System.out.println("[Auth Filter] Request rejected due to invalid token");
-                httpResponse.getWriter().write("Invalid token");
+                httpResponse.getWriter().write("Response: Invalid token\n");
                 httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 break;
             case INVALID_PERMISSIONS:
                 // Token doesn't have the correct permissions for this type of request.
                 System.out.println("[Auth Filter] Request rejected due to insufficient permissions");
-                httpResponse.getWriter().write("Insufficient permissions");
-                httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                httpResponse.getWriter().write("Response: Insufficient permissions\n");
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                break;
             case AUTHORIZED:
                 // Token is valid, proceed with the chain
                 System.out.println("[Auth Filter] Request validated");
                 chain.doFilter(request, response);
+                break;
         }
     }
 }

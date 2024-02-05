@@ -2,8 +2,8 @@ package it.giuliatesta.cctproject;
 
 class Host implements Comparable<Host> {
 
-    // needs to wait at least 2 minutes to retry
-    private static final int WAIT = 120;
+    // needs to wait at least 30 seconds
+    private static final int WAIT = 30;
 
     public String host;
     private boolean timeout = false;
