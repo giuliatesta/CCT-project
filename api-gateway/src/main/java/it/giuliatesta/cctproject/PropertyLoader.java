@@ -42,9 +42,9 @@ public class PropertyLoader {
         int i = 0;
         boolean stop = false;
         do {
-            String sourcePath = configs.getProperty("route." + i + ".sourcePath");
-            String destinationPath = configs.getProperty("route." + i + ".destinationPath");
-            String destinationHost = configs.getProperty("route." + i + ".destinationHost");
+            String sourcePath = get("route." + i + ".sourcePath");
+            String destinationPath = get("route." + i + ".destinationPath");
+            String destinationHost = get("route." + i + ".destinationHost");
             if (sourcePath == null || destinationPath == null || destinationHost == null) {
                 stop = true;
             } else {
@@ -67,6 +67,6 @@ public class PropertyLoader {
         if (host.startsWith("/")) {
             host.substring(1);
         }
-        return configs.getProperty("service." + host);
+        return get("service." + host);
     }
 }
