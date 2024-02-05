@@ -32,7 +32,11 @@ public class PropertyLoader {
     }
 
     public String get(String config) {
-        return configs.getProperty(config).trim();
+        var property = configs.getProperty(config);
+        if (property != null) {
+            property.trim();
+        }
+        return property;
     }
 
     // routes are defined in properies with three values
