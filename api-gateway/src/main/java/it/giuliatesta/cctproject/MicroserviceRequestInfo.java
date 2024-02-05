@@ -46,8 +46,7 @@ public class MicroserviceRequestInfo {
         if (hosts.containsKey(destinationHost)) {
             availableHosts = hosts.get(destinationHost);
         } else {
-
-            String stringifiedHosts = config.get(destinationHost);
+            String stringifiedHosts = config.getHosts(destinationHost);
 
             if (stringifiedHosts == null || stringifiedHosts.isEmpty()) {
                 throw new PropertyNotFoundException("[RetryingLoadBalancer] Requested hosts not found");
