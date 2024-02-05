@@ -3,7 +3,6 @@ package it.giuliatesta.cctproject;
 import java.io.IOException;
 
 import org.springframework.http.HttpMethod;
-import org.springframework.web.client.RestTemplate;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

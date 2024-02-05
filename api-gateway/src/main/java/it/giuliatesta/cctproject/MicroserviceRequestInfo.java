@@ -46,6 +46,7 @@ public class MicroserviceRequestInfo {
         if (hosts.containsKey(destinationHost)) {
             availableHosts = hosts.get(destinationHost);
         } else {
+
             String stringifiedHosts = config.get(destinationHost);
 
             if (stringifiedHosts == null || stringifiedHosts.isEmpty()) {

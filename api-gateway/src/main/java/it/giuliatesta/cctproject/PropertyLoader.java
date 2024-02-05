@@ -32,7 +32,7 @@ public class PropertyLoader {
     }
 
     public String get(String config) {
-        return configs.getProperty(config);
+        return configs.getProperty(config).trim();
     }
 
     // routes are defined in properies with three values
@@ -60,5 +60,13 @@ public class PropertyLoader {
                 .filter(route -> route.sourcePath.equals(sourcePath))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public String getHosts(String host) {
+        // remove the prefix "/" to search the service
+        if (host.startsWith("/")) {
+            host.substring(1);
+        }
+        return configs.getProperty("service." + host);
     }
 }
