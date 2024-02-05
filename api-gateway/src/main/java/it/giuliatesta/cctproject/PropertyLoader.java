@@ -22,6 +22,7 @@ public class PropertyLoader {
         try {
             InputStream input = PropertyLoader.class.getClassLoader().getResourceAsStream("cct-config.properties");
             configs.load(input);
+            System.out.println("CONFIGS\n:" + configs);
             castIntoRoutes();
             System.out.println("[PropertyLoader] loaded properties in 'cct-config.properties'");
         } catch (Exception e) {
@@ -69,7 +70,7 @@ public class PropertyLoader {
     public String getHosts(String host) {
         // remove the prefix "/" to search the service
         if (host.startsWith("/")) {
-            host.substring(1);
+            host = host.replace("/", "");
         }
         return get("service." + host);
     }
