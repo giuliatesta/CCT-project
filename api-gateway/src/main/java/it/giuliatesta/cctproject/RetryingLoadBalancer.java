@@ -20,6 +20,12 @@ public abstract class RetryingLoadBalancer {
     public void send(HttpServletRequest request, HttpServletResponse response, HttpMethod method)
             throws IOException {
         MicroserviceRequestInfo microserviceRequestInfo = getMicroserviceInfo(request);
+        performWithRetryAndTimeOutPolicies(request, response, method, microserviceRequestInfo);
+    }
+
+    private void performWithRetryAndTimeOutPolicies(HttpServletRequest request,
+            HttpServletResponse response, HttpMethod method, MicroserviceRequestInfo microserviceRequestInfo)
+            throws IOException {
         if (microserviceRequestInfo == null) {
             System.out.println("[Retrying Load Balancer] Request not found.");
             response.getWriter().println("Request not found.");
@@ -72,13 +78,16 @@ public abstract class RetryingLoadBalancer {
                 // stops if it definitely fails
                 System.out.println("[Retrying Load Balancer] Request to " + microserviceRequestInfo.route.sourcePath
                         + " has failed: " + e);
+                System.out.println("CATCH");
                 if (!canRetry()) {
+                    System.out.println("CANNOT RETRY");
                     System.out.println("[Retrying Load Balancer] circuit break opening.");
                     stop(response, host, e.getMessage());
                 } else {
-                    System.out.println("[Retrying Load Balancer] retrying with new host...");
+                    System.out.println("CAN RETRY");
+                    // System.out.println("[Retrying Load Balancer] retrying with new host...");
                     // retry
-                    send(request, response, method);
+                    performWithRetryAndTimeOutPolicies(request, response, method, microserviceRequestInfo);
                 }
             }
         }
