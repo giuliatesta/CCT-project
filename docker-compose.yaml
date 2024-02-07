@@ -8,35 +8,35 @@ services:
     ports:
       - 8080:8080
     networks:
-      - cct-procject_default
+      - cct-project_default
 
   users1:
     image: kennethreitz/httpbin
     ports:
       - 9080:80
     networks:
-      - cct-procject_default
+      - cct-project_default
 
   users2:
     image: kennethreitz/httpbin
     ports:
       - 7080:80
     networks:
-      - cct-procject_default
+      - cct-project_default
 
   resources1:
     image: kennethreitz/httpbin
     ports:
       - 9180:80
     networks:
-      - cct-procject_default
+      - cct-project_default
 
   resources2:
     image: kennethreitz/httpbin
     ports:
       - 7180:80
     networks:
-      - cct-procject_default
+      - cct-project_default
 
 networks:
-  cct-procject_default:
+  cct-project_default:
