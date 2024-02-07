@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebFilter(filterName = "Custom filter to menage rate limiting")
 public class RateLimitingFilter implements Filter {
 
-    private static final int BUCKET_CAPACITY = 100;
+    private static final int BUCKET_CAPACITY = 10;
     private static final long REFILL_RATE = 1000;
 
     private static final HashMap<String, Long> refillTimes = new HashMap<>();
@@ -34,7 +34,7 @@ public class RateLimitingFilter implements Filter {
             chain.doFilter(request, response);
         } else {
             // stops and return 429 (too many requests)
-            response.getWriter().write("Too many requests: rate limit exceeded.");
+            response.getWriter().write("Too many requests: rate limit exceeded.\n");
             ((HttpServletResponse) response).setStatus(429);
         }
     }

@@ -34,7 +34,7 @@ public class AuthFilter implements Filter {
                 // Token doesn't have the correct permissions for this type of request.
                 System.out.println("[Auth Filter] Request rejected due to insufficient permissions");
                 httpResponse.getWriter().write("Response: Insufficient permissions\n");
-                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 break;
             case AUTHORIZED:
                 // Token is valid, proceed with the chain
@@ -69,13 +69,13 @@ class Auth {
             Algorithm algorithm = Algorithm.HMAC256(getSecret());
             var decoded = JWT.require(algorithm).build().verify(strToken);
             var role = decoded.getClaim("role").asString();
-
+            System.out.println("ROLE: " + role);
             // admin can do anything
             // everybody else can only GET, HEAD and OPTIONS
-            if (!"admin".equals(role) && !allowedMethod(method)) {
-                return AuthResponse.INVALID_PERMISSIONS;
+            if ("admin".equals(role) || allowedMethod(method)) {
+                return AuthResponse.AUTHORIZED;
             }
-            return AuthResponse.AUTHORIZED;
+            return AuthResponse.INVALID_PERMISSIONS;
         } catch (Exception e) {
             System.out.println("[Auth] Error while validating jwt: " + e);
             return AuthResponse.INVALID_TOKEN;
