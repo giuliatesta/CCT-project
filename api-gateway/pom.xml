@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>it.giuliatesta</groupId>
 	<artifactId>cct-project</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>CCT-project</name>
 	<description>CCT-project</description>
 	<properties>

@@ -69,7 +69,6 @@ class Auth {
             Algorithm algorithm = Algorithm.HMAC256(getSecret());
             var decoded = JWT.require(algorithm).build().verify(strToken);
             var role = decoded.getClaim("role").asString();
-            System.out.println("ROLE: " + role);
             // admin can do anything
             // everybody else can only GET, HEAD and OPTIONS
             if ("admin".equals(role) || allowedMethod(method)) {
